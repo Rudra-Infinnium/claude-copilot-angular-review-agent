@@ -148,27 +148,32 @@ You should see `angular-code-reviewer` in the list. If not, see [Troubleshooting
 
 ### A.4 Run the review
 
-At the Claude prompt, type any of these:
+The agent reviews the **whole project by default**, but you can narrow it — just say what you want:
+
+| What you type | What gets reviewed |
+|---|---|
+| `Review this Angular project` | Everything (default) |
+| `Review src/app/search/` | Just that folder |
+| `Review autocomplete.component.ts` | Just that component (its `.html` template is read too) |
+| `Review my changes` | Uncommitted work (`git diff`) |
+| `Review this branch` | Your branch vs `main` — good for self-review before pushing |
+| *paste a snippet* then `review this` | Just the pasted code |
+
+You can also name the agent explicitly if auto-delegation doesn't fire:
 
 ```
-Use the angular-code-reviewer agent to review this project
+Use the angular-code-reviewer agent to review src/app/checkout/
 ```
-
-or the simpler form:
-
-```
-Review this Angular project
-```
-
-(Because the agent has `MUST BE USED` in its description, Claude Code will auto-delegate to it.)
 
 The agent will:
-1. Explore your project
-2. Read source files and templates
+1. Work out the scope from your request
+2. Read the in-scope files and their templates
 3. Write `ANGULAR_CODE_REVIEW.md` at the project root
 4. Print a summary of finding counts and the top fix
 
 Open `ANGULAR_CODE_REVIEW.md` in VS Code / Notepad / your editor of choice to review the results.
+
+> **Note:** narrowed reviews overwrite the same `ANGULAR_CODE_REVIEW.md`. Check the `Mode:` line at the top of the report if you're unsure whether you're looking at a full or partial review.
 
 ---
 
@@ -227,14 +232,19 @@ Without Agent mode, Copilot cannot write the report file — you'll get the revi
 
 ### B.5 Run the review
 
-In the Copilot Chat panel, type:
+In the Copilot Chat panel, type `/angular-code-reviewer`. It reviews the **whole workspace by default**, but you can narrow it:
 
-```
-/angular-code-reviewer
-```
+| How you invoke it | What gets reviewed |
+|---|---|
+| `/angular-code-reviewer` | Everything (default) |
+| Select code in the editor first, then `/angular-code-reviewer` | Just the selection |
+| `/angular-code-reviewer #file:autocomplete.component.ts` | Just that component |
+| `/angular-code-reviewer src/app/search/` | Just that folder |
+| `/angular-code-reviewer my changes` | Uncommitted work (`git diff`) |
+| `/angular-code-reviewer this branch` | Your branch vs `main` |
 
 Press Enter. Copilot will:
-1. Explore your workspace
+1. Work out the scope
 2. Ask you to approve tool calls (Read, Search, Write) — click **Continue** each time, or click **Always** to skip future prompts for that tool
 3. Write `ANGULAR_CODE_REVIEW.md` at the workspace root
 4. Summarize the results in chat
