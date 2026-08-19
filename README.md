@@ -255,41 +255,48 @@ Open `ANGULAR_CODE_REVIEW.md` in the editor to review the results.
 
 ## What the report looks like
 
-The report is built to be scanned, not read. Findings are grouped by file with the line number, a one-sentence problem, and a one-line fix:
+The generated `ANGULAR_CODE_REVIEW.md` follows this structure. `Issue` and `Recommendation` are capped at 2–3 lines each so the report stays scannable:
 
 ```markdown
-# Angular Code Review
+# Angular Code Review Report
 
-2026-08-19 · Full project: 87 files · Angular 17.3 · 1 Critical, 3 High, 4 Medium
+**Date:** 2026-08-19
+**Mode:** Full project
+**Scope:** 87 TypeScript files. Angular version: 17.3. State style: signals + BehaviorSubject services (mixed).
 
-## Summary
-Feature folders and lazy routes are set up well, and signals are used for local state.
+## Executive Summary
+Feature folders and lazy routes are set up well, and signals are used for local UI state.
 The main risk is unmanaged subscriptions — several components leak on every navigation.
+Change detection is left on default in most presentational components.
 
 ## Findings
 
-### src/app/search/autocomplete.component.ts
+### Critical
 
-**L42 · Critical** — `results$.subscribe()` never unsubscribes, leaking on every navigation to /search
-→ Add `takeUntilDestroyed(this.destroyRef)` to the pipe
+#### Subscription leak in autocomplete
+- **Location:** `src/app/search/autocomplete.component.ts` — `AutocompleteComponent.ngOnInit` (line 42)
+- **Severity:** Critical
+- **Issue:** `results$.subscribe()` is never torn down, so every navigation to /search leaves
+  a live subscription behind. Memory and CPU grow unbounded across a long session.
+- **Recommendation:** Add `takeUntilDestroyed(this.destroyRef)` to the pipe, or bind with
+  the `async` pipe in the template instead.
 
-**L67 · High** — Nested `subscribe()` inside a `subscribe()` causes out-of-order results
-→ Flatten with `switchMap`
+### High
 
-### src/app/search/autocomplete.component.html
+#### Missing track on a keystroke-driven list
+- **Location:** `src/app/search/autocomplete.component.html` (line 12)
+- **Severity:** High
+- **Issue:** The `@for` block has no `track`, so Angular destroys and recreates every row
+  on each keystroke. Visible typing lag once the list exceeds ~50 items.
+- **Recommendation:** Add `track item.id` to the `@for` expression.
 
-**L12 · High** — `@for` has no `track`, so the whole list re-renders on every keystroke
-→ Add `track item.id`
+### Medium
+### Low
 
-### src/app/shared/user-card.component.ts
-
-**L8 · Medium** — Default change detection on a pure presentational component
-→ Add `changeDetection: ChangeDetectionStrategy.OnPush`
-
-## Fix these first
-1. `autocomplete.component.ts:42` — Fix subscription leak — grows unbounded in a long session
-2. `autocomplete.component.html:12` — Add `track` — visible typing lag today
-3. `autocomplete.component.ts:67` — Flatten nested subscribe — wrong results shown to users
+## Top 3 Fixes to Tackle First
+1. **Fix the autocomplete subscription leak** — grows unbounded in a long session.
+2. **Add `track` to the results list** — visible typing lag today.
+3. **Flatten the nested `subscribe()`** — out-of-order results shown to users.
 ```
 
 ---
