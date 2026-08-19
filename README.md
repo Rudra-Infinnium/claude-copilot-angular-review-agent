@@ -255,41 +255,41 @@ Open `ANGULAR_CODE_REVIEW.md` in the editor to review the results.
 
 ## What the report looks like
 
-The generated `ANGULAR_CODE_REVIEW.md` follows this structure:
+The report is built to be scanned, not read. Findings are grouped by file with the line number, a one-sentence problem, and a one-line fix:
 
 ```markdown
-# Angular Code Review Report
+# Angular Code Review
 
-**Date:** 2026-07-07
-**Scope:** 87 TypeScript files reviewed. Angular version: 17.3. State style: signals + BehaviorSubject services (mixed).
+2026-08-19 · Full project: 87 files · Angular 17.3 · 1 Critical, 3 High, 4 Medium
 
-## Executive Summary
-<3-5 sentences describing overall health, biggest risks, biggest strengths.>
+## Summary
+Feature folders and lazy routes are set up well, and signals are used for local state.
+The main risk is unmanaged subscriptions — several components leak on every navigation.
 
 ## Findings
 
-### Critical
-#### Memory leak in autocomplete component
-- **Location:** `src/app/search/autocomplete.component.ts` — `AutocompleteComponent.ngOnInit` (line 42)
-- **Severity:** Critical
-- **Issue:** `this.searchService.results$.subscribe(...)` never unsubscribes; every navigation to /search leaks a subscription.
-- **Recommendation:** Use `takeUntilDestroyed(this.destroyRef)` (Angular 16+) or the `async` pipe in the template.
+### src/app/search/autocomplete.component.ts
 
-### High
-### Medium
-### Low
+**L42 · Critical** — `results$.subscribe()` never unsubscribes, leaking on every navigation to /search
+→ Add `takeUntilDestroyed(this.destroyRef)` to the pipe
 
-## Scorecard
+**L67 · High** — Nested `subscribe()` inside a `subscribe()` causes out-of-order results
+→ Flatten with `switchMap`
 
-| Area | Score (1-5) | Notes |
-|---|---|---|
-| Architecture & Module Structure | 4/5 | Feature folders, lazy routes. |
-| RxJS Usage & Memory Leaks | 2/5 | Several unmanaged subscriptions. |
-| ... | ... | ... |
+### src/app/search/autocomplete.component.html
 
-## Top 3 Fixes to Tackle First
-1. **Fix autocomplete leak** — user-visible perf regression, low effort.
-2. ...
+**L12 · High** — `@for` has no `track`, so the whole list re-renders on every keystroke
+→ Add `track item.id`
+
+### src/app/shared/user-card.component.ts
+
+**L8 · Medium** — Default change detection on a pure presentational component
+→ Add `changeDetection: ChangeDetectionStrategy.OnPush`
+
+## Fix these first
+1. `autocomplete.component.ts:42` — Fix subscription leak — grows unbounded in a long session
+2. `autocomplete.component.html:12` — Add `track` — visible typing lag today
+3. `autocomplete.component.ts:67` — Flatten nested subscribe — wrong results shown to users
 ```
 
 ---

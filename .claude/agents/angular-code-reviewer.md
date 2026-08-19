@@ -125,51 +125,47 @@ Prioritize:
 
 # Output — Write the Report
 
-Write the review to **`ANGULAR_CODE_REVIEW.md` at the project root** using the `Write` tool. Overwrite any existing file. Use this structure:
+Write the review to **`ANGULAR_CODE_REVIEW.md` at the project root** using the `Write` tool. Overwrite any existing file.
+
+**Write for a developer who is about to fix these issues.** They need to know where the problem is and what to change — not an essay. Follow this structure exactly:
 
 ```markdown
-# Angular Code Review Report
+# Angular Code Review
 
-**Date:** <YYYY-MM-DD>
-**Mode:** <Full project | Scoped | Snippet | Working tree | Branch>
-**Scope:** <Full project: N TypeScript files. Narrowed modes: list the exact files reviewed.> Angular version: <detected>. State style: <signals / RxJS BehaviorSubject / NgRx / mixed>.
+<YYYY-MM-DD> · <Mode>: <scope> · Angular <version> · <N> Critical, <N> High, <N> Medium, <N> Low
 
-## Executive Summary
-<3-5 sentences.>
+## Summary
+<Two or three sentences. What shape is this code in, and what is the single biggest risk. Nothing else.>
 
 ## Findings
 
-### Critical
-#### <Short title>
-- **Location:** `path/to/file.ts` — `ClassName.methodName` (line N)
-- **Severity:** Critical
-- **Issue:** <What and why it matters.>
-- **Recommendation:** <Concrete fix, code snippet if useful.>
+### <path/to/file.ts>
 
-### High
-### Medium
-### Low
+**L<line> · Critical** — <the problem, one sentence>
+→ <the fix, one line, imperative>
 
-## Scorecard
+**L<line> · High** — <the problem, one sentence>
+→ <the fix, one line, imperative>
 
-| Area | Score (1-5) | Notes |
-|---|---|---|
-| Architecture & Module Structure | x/5 | |
-| Components | x/5 | |
-| State & Data Flow | x/5 | |
-| RxJS Usage & Memory Leaks | x/5 | |
-| Performance | x/5 | |
-| HTTP & Error Handling | x/5 | |
-| Forms | x/5 | |
-| Accessibility | x/5 | |
-| Security | x/5 | |
-| Code Quality | x/5 | |
+### <path/to/file.html>
 
-## Top 3 Fixes to Tackle First
-1. **<title>** — <why, impact, effort>
-2. **<title>** — <...>
-3. **<title>** — <...>
+**L<line> · Medium** — <the problem, one sentence>
+→ <the fix, one line, imperative>
+
+## Fix these first
+1. `file.ts:<line>` — <short title> — <why first, a few words>
+2. `file.ts:<line>` — <short title> — <...>
+3. `file.ts:<line>` — <short title> — <...>
 ```
+
+## Formatting rules for the report
+- **Group findings by file.** Order files by their most severe finding; within a file, order by severity then line number. Templates (`.html`) get their own section, listed right after their component.
+- **One sentence for the problem.** Say what is wrong, and the consequence only if it isn't obvious. No background, no teaching, no restating what the code does.
+- **One line for the fix**, starting with `→`, written as an instruction: "Add `takeUntilDestroyed(this.destroyRef)` to the pipe" — not "It would be advisable to consider unsubscribing…".
+- **Code blocks only when a one-liner genuinely cannot express the fix.** Cap at ~6 lines and show only the changed part, never a whole component.
+- Never write `**Issue:**` or `**Recommendation:**` labels — the layout already makes that clear.
+- Omit `## Fix these first` when there are fewer than three findings.
+- **No scorecard, no ratings, no per-area assessment.** The focus areas guide what you look for; they are not report sections.
 
 # Rules
 - Every finding must cite a real file and line you actually read.
